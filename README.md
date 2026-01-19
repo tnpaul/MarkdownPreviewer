@@ -2,6 +2,12 @@
 
 A modern, feature-rich Markdown editor and previewer built with React, TypeScript, and Tailwind CSS. Write Markdown on the left and see live preview on the right with synchronized scrolling, syntax highlighting, and dark mode support.
 
+## 🚀 Live Demo
+
+Check out the live demo: [https://markdown-dev.vercel.app/](https://markdown-dev.vercel.app/)
+
+## Screenshots
+
 ![Markdown Previewer Screenshot](/screens/screen1.png)
 ![Markdown Previewer Screenshot](/screens/screen2.png)
 
@@ -16,10 +22,6 @@ A modern, feature-rich Markdown editor and previewer built with React, TypeScrip
 - 📋 **Copy to Clipboard** - Quickly copy your Markdown content
 - 🔄 **Reset** - Clear the editor with one click
 - 📱 **Responsive Design** - Works on different screen sizes
-
-## 🚀 Live Demo
-
-Check out the live demo: [https://your-demo-url.app](https://your-demo-url.app)
 
 ## 🛠️ Tech Stack
 
