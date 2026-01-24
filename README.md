@@ -40,7 +40,7 @@ Check out the live demo: [https://markdown-dev.vercel.app/](https://markdown-dev
 ### Prerequisites
 
 - Node.js (v16 or higher)
-- npm or yarn or pnpm
+- npm
 
 ### Local Setup
 
@@ -53,10 +53,6 @@ Check out the live demo: [https://markdown-dev.vercel.app/](https://markdown-dev
 2. **Install dependencies**
    ```bash
    npm install
-   # or
-   yarn install
-   # or
-   pnpm install
    ```
 
 3. **Install TypeScript types for react-syntax-highlighter**
@@ -72,10 +68,6 @@ Start the development server with hot reload:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
 The application will be available at `http://localhost:5173`

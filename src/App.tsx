@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button"
-import { Copy, Link2, Moon, RotateCcw, Sun, Github } from "lucide-react"
+import { Copy, Link2, Moon, RotateCcw, Sun, Github, CheckCircle2, Download } from "lucide-react"
 import React, { useEffect, useRef, useState } from "react"
 import MarkdownRenderer from "@/components/common/MarkdownRenderer"
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 function App() {
   const defaultMarkdown = `# Markdown Formatting Showcase
@@ -24,7 +26,7 @@ This document demonstrates all common Markdown formatting types, each under its 
 - **Bold text**
 - *Italic text*
 - ***Bold and Italic***
-- <u>Underlined text</u>
+- ~~Strikethrough text~~
 
 ---
 
@@ -64,12 +66,12 @@ This document demonstrates all common Markdown formatting types, each under its 
 Use \`console.log()\` to print output in JavaScript.
 
 ### Code Block
-\`\`\`javascript
-function greet(name) {
-  console.log("Hello, " + name + "!");
-}
+\`\`\`python
+def greet(name):
+    print("Hello, " + name + "!")
 
-greet("Markdown");
+greet("Markdown")
+
 \`\`\`
 
 ---
@@ -99,9 +101,12 @@ greet("Markdown");
   const [markdown, setMarkdown] = useState<string>(defaultMarkdown);
   
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [syncScroll, setSyncScroll] = useState(true);
+  const [syncScroll, setSyncScroll] = useState(false);
   const [dividerPosition, setDividerPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+  const [showCopyFeedback, setShowCopyFeedback] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+
   
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -118,16 +123,137 @@ greet("Markdown");
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(markdown);
-      alert('Markdown copied to clipboard!');
+      setShowCopyFeedback(true);
+      setTimeout(() => setShowCopyFeedback(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
   };
 
   const handleReset = () => {
-    if (confirm('Are you sure you want to reset the markdown?')) {
-      setMarkdown(defaultMarkdown);
+    setShowResetDialog(true);
+  };
+
+  const confirmReset = () => {
+    setMarkdown(defaultMarkdown);
+    setShowResetDialog(false);
+  };
+
+  const downloadAsMarkdown = () => {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/markdown;charset=utf-8,' + encodeURIComponent(markdown));
+    element.setAttribute('download', 'markdown.md');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const downloadAsPDF = () => {
+    if (!previewRef.current) return;
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    if (!printWindow) {
+      alert('Please allow popups to download PDF');
+      return;
     }
+
+    const content = previewRef.current.innerHTML;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Markdown PDF</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #000;
+              background: white;
+              padding: 40px;
+            }
+            h1 { font-size: 2em; margin: 0.67em 0; border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+            h2 { font-size: 1.5em; margin: 0.75em 0; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }
+            h3 { font-size: 1.25em; margin: 0.83em 0; }
+            h4 { font-size: 1em; margin: 1em 0; }
+            h5 { font-size: 0.875em; margin: 1.16em 0; }
+            h6 { font-size: 0.75em; margin: 1.33em 0; color: #666; }
+            p { margin: 1em 0; }
+            ul, ol { margin: 1em 0; padding-left: 2em; }
+            li { margin: 0.25em 0; }
+            code { 
+              background: #f5f5f5; 
+              padding: 0.2em 0.4em; 
+              border-radius: 3px; 
+              font-family: 'Courier New', monospace;
+              font-size: 0.9em;
+            }
+            pre { 
+              background: #f5f5f5; 
+              padding: 1em; 
+              border-radius: 5px; 
+              overflow-x: auto;
+              margin: 1em 0;
+            }
+            pre code { 
+              background: none; 
+              padding: 0;
+            }
+            blockquote { 
+              border-left: 4px solid #ddd; 
+              padding-left: 1em; 
+              margin: 1em 0;
+              color: #666;
+            }
+            table { 
+              border-collapse: collapse; 
+              width: 100%; 
+              margin: 1em 0;
+            }
+            th, td { 
+              border: 1px solid #ddd; 
+              padding: 0.5em; 
+              text-align: left;
+            }
+            th { 
+              background: #f5f5f5; 
+              font-weight: bold;
+            }
+            hr { 
+              border: none; 
+              border-top: 1px solid #ddd; 
+              margin: 2em 0;
+            }
+            a { 
+              color: #0066cc; 
+              text-decoration: none;
+            }
+            a:hover { 
+              text-decoration: underline;
+            }
+            img { 
+              max-width: 100%; 
+              height: auto;
+            }
+            @media print {
+              body { padding: 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          ${content}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
 
   const handleGithubClick = () => {
@@ -157,7 +283,6 @@ greet("Markdown");
       const containerRect = container.getBoundingClientRect();
       const newPosition = ((e.clientX - containerRect.left) / containerRect.width) * 100;
       
-      // Constrain between 20% and 80%
       if (newPosition >= 20 && newPosition <= 80) {
         setDividerPosition(newPosition);
       }
@@ -202,8 +327,17 @@ greet("Markdown");
             onClick={handleCopy}
             className="flex items-center justify-center gap-1 h-7 px-2"
           >
-            <Copy className="w-3 h-3" />
-            <span className="text-[11px] leading-none">Copy</span>
+            {showCopyFeedback ? (
+              <>
+                <CheckCircle2 className="w-3 h-3 text-green-600" />
+                <span className="text-[11px] leading-none">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3" />
+                <span className="text-[11px] leading-none">Copy</span>
+              </>
+            )}
           </Button>
 
           <Button
@@ -215,6 +349,27 @@ greet("Markdown");
             <RotateCcw className="w-3 h-3" />
             <span className="text-[11px] leading-none">Reset</span>
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center gap-1 h-7 px-2"
+              >
+                <Download className="w-3 h-3" />
+                <span className="text-[11px] leading-none">Download</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={downloadAsMarkdown}>
+                Download as Markdown
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={downloadAsPDF}>
+                Download as PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button
             variant={syncScroll ? "default" : "outline"}
@@ -296,6 +451,26 @@ greet("Markdown");
           </div>
         </div>
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogTitle>Reset Editor</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to reset the markdown? This action cannot be undone.
+          </DialogDescription>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmReset} className="bg-red-600 hover:bg-red-700">
+              Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
     </div>
   );
 }

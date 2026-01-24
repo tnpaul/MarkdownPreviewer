@@ -11,4 +11,8 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    port: 3010,      // 👈 choose your port
+    strictPort: true // optional: fail if port is already in use
+  },
 })
