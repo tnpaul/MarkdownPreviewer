@@ -106,6 +106,7 @@ greet("Markdown")
   const [isDragging, setIsDragging] = useState(false);
   const [showCopyFeedback, setShowCopyFeedback] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
+
   
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -149,8 +150,110 @@ greet("Markdown")
   };
 
   const downloadAsPDF = () => {
-    // This is a placeholder. For a complete PDF implementation, you'd need a library like jsPDF
-    alert('PDF download feature requires additional setup. Please use a markdown to PDF converter tool.');
+    if (!previewRef.current) return;
+
+    const printWindow = window.open('', '', 'width=800,height=600');
+    if (!printWindow) {
+      alert('Please allow popups to download PDF');
+      return;
+    }
+
+    const content = previewRef.current.innerHTML;
+    
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Markdown PDF</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            body { 
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #000;
+              background: white;
+              padding: 40px;
+            }
+            h1 { font-size: 2em; margin: 0.67em 0; border-bottom: 2px solid #eee; padding-bottom: 0.3em; }
+            h2 { font-size: 1.5em; margin: 0.75em 0; border-bottom: 1px solid #eee; padding-bottom: 0.3em; }
+            h3 { font-size: 1.25em; margin: 0.83em 0; }
+            h4 { font-size: 1em; margin: 1em 0; }
+            h5 { font-size: 0.875em; margin: 1.16em 0; }
+            h6 { font-size: 0.75em; margin: 1.33em 0; color: #666; }
+            p { margin: 1em 0; }
+            ul, ol { margin: 1em 0; padding-left: 2em; }
+            li { margin: 0.25em 0; }
+            code { 
+              background: #f5f5f5; 
+              padding: 0.2em 0.4em; 
+              border-radius: 3px; 
+              font-family: 'Courier New', monospace;
+              font-size: 0.9em;
+            }
+            pre { 
+              background: #f5f5f5; 
+              padding: 1em; 
+              border-radius: 5px; 
+              overflow-x: auto;
+              margin: 1em 0;
+            }
+            pre code { 
+              background: none; 
+              padding: 0;
+            }
+            blockquote { 
+              border-left: 4px solid #ddd; 
+              padding-left: 1em; 
+              margin: 1em 0;
+              color: #666;
+            }
+            table { 
+              border-collapse: collapse; 
+              width: 100%; 
+              margin: 1em 0;
+            }
+            th, td { 
+              border: 1px solid #ddd; 
+              padding: 0.5em; 
+              text-align: left;
+            }
+            th { 
+              background: #f5f5f5; 
+              font-weight: bold;
+            }
+            hr { 
+              border: none; 
+              border-top: 1px solid #ddd; 
+              margin: 2em 0;
+            }
+            a { 
+              color: #0066cc; 
+              text-decoration: none;
+            }
+            a:hover { 
+              text-decoration: underline;
+            }
+            img { 
+              max-width: 100%; 
+              height: auto;
+            }
+            @media print {
+              body { padding: 20px; }
+            }
+          </style>
+        </head>
+        <body>
+          ${content}
+        </body>
+      </html>
+    `);
+
+    printWindow.document.close();
+    
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 250);
   };
 
   const handleGithubClick = () => {
@@ -180,7 +283,6 @@ greet("Markdown")
       const containerRect = container.getBoundingClientRect();
       const newPosition = ((e.clientX - containerRect.left) / containerRect.width) * 100;
       
-      // Constrain between 20% and 80%
       if (newPosition >= 20 && newPosition <= 80) {
         setDividerPosition(newPosition);
       }
@@ -367,6 +469,8 @@ greet("Markdown")
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+
     </div>
   );
 }
