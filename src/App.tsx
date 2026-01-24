@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button"
-import { Copy, Link2, Moon, RotateCcw, Sun, Github } from "lucide-react"
+import { Copy, Link2, Moon, RotateCcw, Sun, Github, CheckCircle2, Download } from "lucide-react"
 import React, { useEffect, useRef, useState } from "react"
 import MarkdownRenderer from "@/components/common/MarkdownRenderer"
+import { Dialog, DialogContent, DialogDescription, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 
 function App() {
   const defaultMarkdown = `# Markdown Formatting Showcase
@@ -24,7 +26,7 @@ This document demonstrates all common Markdown formatting types, each under its 
 - **Bold text**
 - *Italic text*
 - ***Bold and Italic***
-- <u>Underlined text</u>
+- ~~Strikethrough text~~
 
 ---
 
@@ -64,12 +66,12 @@ This document demonstrates all common Markdown formatting types, each under its 
 Use \`console.log()\` to print output in JavaScript.
 
 ### Code Block
-\`\`\`javascript
-function greet(name) {
-  console.log("Hello, " + name + "!");
-}
+\`\`\`python
+def greet(name):
+    print("Hello, " + name + "!")
 
-greet("Markdown");
+greet("Markdown")
+
 \`\`\`
 
 ---
@@ -99,9 +101,11 @@ greet("Markdown");
   const [markdown, setMarkdown] = useState<string>(defaultMarkdown);
   
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [syncScroll, setSyncScroll] = useState(true);
+  const [syncScroll, setSyncScroll] = useState(false);
   const [dividerPosition, setDividerPosition] = useState(50);
   const [isDragging, setIsDragging] = useState(false);
+  const [showCopyFeedback, setShowCopyFeedback] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
   
   const editorRef = useRef<HTMLTextAreaElement>(null);
   const previewRef = useRef<HTMLDivElement>(null);
@@ -118,16 +122,35 @@ greet("Markdown");
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(markdown);
-      alert('Markdown copied to clipboard!');
+      setShowCopyFeedback(true);
+      setTimeout(() => setShowCopyFeedback(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
   };
 
   const handleReset = () => {
-    if (confirm('Are you sure you want to reset the markdown?')) {
-      setMarkdown(defaultMarkdown);
-    }
+    setShowResetDialog(true);
+  };
+
+  const confirmReset = () => {
+    setMarkdown(defaultMarkdown);
+    setShowResetDialog(false);
+  };
+
+  const downloadAsMarkdown = () => {
+    const element = document.createElement('a');
+    element.setAttribute('href', 'data:text/markdown;charset=utf-8,' + encodeURIComponent(markdown));
+    element.setAttribute('download', 'markdown.md');
+    element.style.display = 'none';
+    document.body.appendChild(element);
+    element.click();
+    document.body.removeChild(element);
+  };
+
+  const downloadAsPDF = () => {
+    // This is a placeholder. For a complete PDF implementation, you'd need a library like jsPDF
+    alert('PDF download feature requires additional setup. Please use a markdown to PDF converter tool.');
   };
 
   const handleGithubClick = () => {
@@ -202,8 +225,17 @@ greet("Markdown");
             onClick={handleCopy}
             className="flex items-center justify-center gap-1 h-7 px-2"
           >
-            <Copy className="w-3 h-3" />
-            <span className="text-[11px] leading-none">Copy</span>
+            {showCopyFeedback ? (
+              <>
+                <CheckCircle2 className="w-3 h-3 text-green-600" />
+                <span className="text-[11px] leading-none">Copied!</span>
+              </>
+            ) : (
+              <>
+                <Copy className="w-3 h-3" />
+                <span className="text-[11px] leading-none">Copy</span>
+              </>
+            )}
           </Button>
 
           <Button
@@ -215,6 +247,27 @@ greet("Markdown");
             <RotateCcw className="w-3 h-3" />
             <span className="text-[11px] leading-none">Reset</span>
           </Button>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center justify-center gap-1 h-7 px-2"
+              >
+                <Download className="w-3 h-3" />
+                <span className="text-[11px] leading-none">Download</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={downloadAsMarkdown}>
+                Download as Markdown
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={downloadAsPDF}>
+                Download as PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
 
           <Button
             variant={syncScroll ? "default" : "outline"}
@@ -296,6 +349,24 @@ greet("Markdown");
           </div>
         </div>
       </div>
+
+      {/* Reset Confirmation Dialog */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent>
+          <DialogTitle>Reset Editor</DialogTitle>
+          <DialogDescription>
+            Are you sure you want to reset the markdown? This action cannot be undone.
+          </DialogDescription>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmReset} className="bg-red-600 hover:bg-red-700">
+              Reset
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
