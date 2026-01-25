@@ -283,7 +283,7 @@ greet("Markdown")
       const containerRect = container.getBoundingClientRect();
       const newPosition = ((e.clientX - containerRect.left) / containerRect.width) * 100;
       
-      if (newPosition >= 20 && newPosition <= 80) {
+      if (newPosition >= 5 && newPosition <= 95) {
         setDividerPosition(newPosition);
       }
     };
